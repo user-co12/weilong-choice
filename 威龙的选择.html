@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>威龙的选择</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap');
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+    background-attachment: fixed;
+    color: #e8e8e8;
+    font-family: "Noto Serif SC", "Source Han Serif SC", "STSong", serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  /* 背景装饰 */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(139, 90, 43, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(70, 100, 140, 0.08) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #game-container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 60px 32px 80px;
+    line-height: 2;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 标题样式 */
+  h1 {
+    color: #d4a856;
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: 8px;
+    text-align: center;
+    margin-bottom: 50px;
+    padding-bottom: 30px;
+    position: relative;
+    text-shadow: 0 2px 10px rgba(212, 168, 86, 0.3);
+  }
+
+  h1::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #d4a856, transparent);
+  }
+
+  h2 {
+    color: #8b9dc3;
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 6px;
+    margin-top: 50px;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  /* 正文样式 */
+  .passage {
+    font-size: 17px;
+    text-align: justify;
+    letter-spacing: 0.5px;
+  }
+
+  .passage p {
+    margin: 0 0 1.6em 0;
+    text-indent: 2em;
+    color: #d8d8d8;
+  }
+
+  .passage p.dialogue {
+    text-indent: 0;
+    color: #f0e6d3;
+    position: relative;
+    padding-left: 0;
+  }
+
+  .passage .bold-label {
+    color: #d4a856;
+    font-weight: 600;
+  }
+
+  /* 分隔线 */
+  hr {
+    border: none;
+    height: 30px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 10'%3E%3Cpath d='M0 5 L40 5 M60 5 L100 5' stroke='%234a5568' stroke-width='1' fill='none'/%3E%3Ccircle cx='50' cy='5' r='3' fill='%234a5568'/%3E%3C/svg%3E") center no-repeat;
+    margin: 40px 0;
+    opacity: 0.6;
+  }
+
+  /* 选择区域 */
+  .choices {
+    margin-top: 60px;
+    padding-top: 40px;
+    position: relative;
+  }
+
+  .choices::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #4a5568, transparent);
+  }
+
+  .choices-title {
+    color: #8b9dc3;
+    font-size: 13px;
+    letter-spacing: 8px;
+    margin-bottom: 25px;
+    text-align: center;
+  }
+
+  .choice-btn {
+    display: block;
+    width: 100%;
+    background: linear-gradient(135deg, rgba(30, 40, 60, 0.8) 0%, rgba(20, 30, 50, 0.9) 100%);
+    border: 1px solid rgba(139, 157, 195, 0.2);
+    border-radius: 8px;
+    color: #d8d8d8;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    text-align: left;
+    font-size: 16px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    line-height: 1.7;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .choice-btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(212, 168, 86, 0.1), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .choice-btn:hover {
+    background: linear-gradient(135deg, rgba(40, 55, 80, 0.9) 0%, rgba(30, 45, 70, 0.95) 100%);
+    border-color: rgba(212, 168, 86, 0.5);
+    transform: translateX(4px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 30px rgba(212, 168, 86, 0.1);
+  }
+
+  .choice-btn:hover::before {
+    left: 100%;
+  }
+
+  .choice-btn .choice-label {
+    color: #d4a856;
+    font-weight: 600;
+    margin-right: 10px;
+  }
+
+  .choice-btn .choice-desc {
+    display: block;
+    color: #8899aa;
+    font-size: 14px;
+    margin-top: 8px;
+    margin-left: 26px;
+    font-style: italic;
+  }
+
+  /* 结局区域 */
+  .ending {
+    text-align: center;
+    margin-top: 60px;
+    padding: 50px 40px;
+    background: linear-gradient(135deg, rgba(30, 40, 60, 0.6) 0%, rgba(20, 30, 50, 0.8) 100%);
+    border: 1px solid rgba(139, 157, 195, 0.15);
+    border-radius: 12px;
+    position: relative;
+  }
+
+  .ending::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #d4a856, transparent);
+  }
+
+  .ending-title {
+    color: #d4a856;
+    font-size: 16px;
+    letter-spacing: 6px;
+    margin-bottom: 20px;
+  }
+
+  .ending-text {
+    color: #8899aa;
+    font-size: 15px;
+    line-height: 1.8;
+    font-style: italic;
+  }
+
+  .restart-btn {
+    display: inline-block;
+    margin-top: 30px;
+    padding: 14px 40px;
+    background: transparent;
+    border: 1px solid #d4a856;
+    border-radius: 6px;
+    color: #d4a856;
+    font-size: 15px;
+    font-family: inherit;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .restart-btn:hover {
+    background: #d4a856;
+    color: #1a1a2e;
+    box-shadow: 0 0 20px rgba(212, 168, 86, 0.4);
+  }
+
+  /* 章节过渡 */
+  .chapter-transition {
+    text-align: center;
+    padding: 60px 0;
+  }
+
+  .chapter-transition .continue-btn {
+    display: inline-block;
+    padding: 18px 60px;
+    background: linear-gradient(135deg, rgba(212, 168, 86, 0.15) 0%, rgba(180, 140, 60, 0.1) 100%);
+    border: 1px solid rgba(212, 168, 86, 0.5);
+    border-radius: 6px;
+    color: #d4a856;
+    font-size: 16px;
+    font-family: inherit;
+    letter-spacing: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .chapter-transition .continue-btn::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(212, 168, 86, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.5s ease, height 0.5s ease;
+  }
+
+  .chapter-transition .continue-btn:hover {
+    background: linear-gradient(135deg, rgba(212, 168, 86, 0.25) 0%, rgba(180, 140, 60, 0.2) 100%);
+    border-color: #d4a856;
+    box-shadow: 0 0 30px rgba(212, 168, 86, 0.3);
+    transform: scale(1.02);
+  }
+
+  .chapter-transition .continue-btn:hover::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  /* 淡入动画 */
+  .fade-in {
+    animation: fadeIn 0.8s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* 段落淡入 */
+  .passage p {
+    animation: fadeInUp 0.6s ease backwards;
+  }
+
+  .passage p:nth-child(1) { animation-delay: 0.1s; }
+  .passage p:nth-child(2) { animation-delay: 0.15s; }
+  .passage p:nth-child(3) { animation-delay: 0.2s; }
+  .passage p:nth-child(4) { animation-delay: 0.25s; }
+  .passage p:nth-child(5) { animation-delay: 0.3s; }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* 滚动条美化 */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #1a1a2e;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #3a4a6a;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #4a5a7a;
+  }
+
+  /* 响应式 */
+  @media (max-width: 600px) {
+    #game-container {
+      padding: 40px 20px 60px;
+    }
+
+    h1 {
+      font-size: 26px;
+      letter-spacing: 4px;
+    }
+
+    .passage {
+      font-size: 16px;
+    }
+
+    .choice-btn {
+      padding: 16px 18px;
+      font-size: 15px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="game-container">
+  <div id="passage-container"></div>
+</div>
+
+<script>
+var gameState = {
+  chapter: 1,
+  route: "normal",
+  choices: [],
+  suspicion: 0,
+  awareness: 0,
+  redwolfTrust: 0
+};
+
+var passages = {
+
+"start": {
+  title: "第一章：货物",
+  content: "<h2>一</h2>" +
+    "<p class=\"dialogue\">\"哥，你那边是不是又要出任务了？\"</p>" +
+    "<p>视频那头，妹妹的脸凑得很近，眉头皱着，像小时候偷看我日记被发现时的表情。</p>" +
+    "<p class=\"dialogue\">\"你咋晓得的？\"</p>" +
+    "<p class=\"dialogue\">\"你每次出任务前都要给我打电话，还要假装不经意地问我最近咋样。\"她翻了个白眼，\"哥，我又不是三岁小孩了。\"</p>" +
+    "<p>我笑了，靠在宿舍的椅背上。窗外是阿萨拉的黄昏，天边烧着一片橙红，沙尘把太阳揉得模糊。屏幕里妹妹穿着大学的卫衣，背景是宿舍的上铺，贴满了乱七八糟的明星海报。</p>" +
+    "<p class=\"dialogue\">\"那你最近咋样嘛？\"</p>" +
+    "<p class=\"dialogue\">\"还能咋样，期末考试要疯了。\"她叹了口气，\"高数太难了，我觉得我要挂科。\"</p>" +
+    "<p class=\"dialogue\">\"你高中数学不是挺好的？\"</p>" +
+    "<p class=\"dialogue\">\"高中数学和高数是两个物种！\"她义愤填膺，\"哥你懂啥子，你当年学的是开飞机，又不考高数。\"</p>" +
+    "<p class=\"dialogue\">\"我学的课程比高数难多了好吧……\"</p>" +
+    "<p class=\"dialogue\">\"反正都是理科，都是变态。\"她摆摆手，不想继续这个话题，\"对了哥，你那个围巾还在戴吗？\"</p>" +
+    "<p>我下意识摸了摸脖子上那条有些发白的军绿色围巾。妹妹高二那年织的，针脚歪歪扭扭，但我每次视频都戴着。</p>" +
+    "<p class=\"dialogue\">\"戴着呢。\"</p>" +
+    "<p class=\"dialogue\">\"都洗得发白了还戴。\"她嘴上嫌弃，眼睛却弯成了月牙，\"等你回来我给你织条新的，这次肯定比上次好看。\"</p>" +
+    "<p class=\"dialogue\">\"行，等你回来。\"</p>" +
+    "<p>挂掉电话，宿舍安静下来。我看着屏幕上妹妹的头像，发了一会儿呆。</p>" +
+    "<p>她去年高考完，知道我加入GTI的时候大哭了一场，说我骗她。我之前只告诉她我在国外做安保工作，没说具体是什么。后来她自己上网查了GTI的资料，看到新闻里那些战区的画面，哭着打电话骂我\"瓜娃子\"。</p>" +
+    "<p>但她最后还是接受了。她说，既然哥你选了这条路，那我就支持你，但是你必须平平安安回来。</p>" +
+    "<p>我答应了。</p>" +
+    "<p>我叫王宇昊，代号威龙，GTI干员，少校。今年27岁，四川人。</p>" +
+    "<p>三年前我还是个舰载机飞行员，成绩够好，身体够硬，差点被选去当宇航员。那时候我觉得自己会在蓝天上飞一辈子，结果命运跟我开了个玩笑——2032年的\"寒沙行动\"，一颗地雷把我的飞行梦炸碎了。</p>" +
+    "<p>那次任务我救了队长，护住了关键证据，自己挨了一肚子弹片，肋骨断了两根。养伤的时候我躺在病床上想，完了，飞不了了。</p>" +
+    "<p>但我没后悔。我做了我该做的事。</p>" +
+    "<p>伤好之后，有人找到我，说GTI在招人，问我有没有兴趣。我想了一夜，第二天就答应了。</p>" +
+    "<p>为啥？</p>" +
+    "<p>因为我见过那些该死的画面。难民营里饿死的孩子，被炸塌的学校，尸体旁边哭喊的老人。我当飞行员的时候见过，在战区执行任务的时候见过。这世界上有些人在作恶，总得有人去阻止他们。我飞不了飞机了，但我还有一双手，还能扛枪。</p>" +
+    "<p>GTI的理念我认，\"不让任何一个人掉队\"。也许有点理想主义，但我就是这样的人。</p>",
+  next: "ch1_2"
+},
+
+"ch1_2": {
+  title: "第一章：货物",
+  content: "<h2>二</h2>" +
+    "<p>说说我现在的处境。</p>" +
+    "<p>阿萨拉，北非，一个被战火烧了十几年的地方。原本是个王国，现在皇室成了傀儡，真正说了算的是哈夫克集团。</p>" +
+    "<p>哈夫克这个名字，在GTI的任务简报里出现的频率比\"早餐\"还高。简单说：全球第一的科技财团，表面搞人工智能和脑机接口，背地里干的是军火走私、人体实验、资源掠夺。他们在阿萨拉建了大坝，切断下游老百姓的水源；建了监狱，拿活人做实验；养了私军，谁不听话就杀谁。</p>" +
+    "<p>我见过哈夫克干的事。有次任务撤离，路过一个村子，整个村子被烧成了白地。情报说那里窝藏过阿萨拉卫队的人。哈夫克的处理方式是——把村子抹掉，男女老少一个不留。</p>" +
+    "<p>那天晚上我没睡着。</p>" +
+    "<p>所以当GTI说\"打击哈夫克\"的时候，我一点心理负担都没有。这些人该打。</p>" +
+    "<p>阿萨拉卫队是另一股势力，本地的反抗武装。成分很杂，有真心反抗侵略的，也有趁火打劫的。GTI跟他们的关系比较微妙——不是盟友，但也不是主要敌人。我个人对他们没啥恶感，换了我是阿萨拉人，我可能也会拿起枪。</p>" +
+    "<p>三方势力在这片土地上绞成一团。哈夫克想控制一切，卫队想赶走外来者，GTI想维持秩序。谁对谁错？我不知道，也没空想。我只知道我的任务是什么，把它做好就行。</p>" +
+    "<p>想太多的人活不长——这话不是我说的，是红狼说的。</p>",
+  next: "ch1_3"
+},
+
+"ch1_3": {
+  title: "第一章：货物",
+  content: "<h2>三</h2>" +
+    "<p>红狼，凯·席尔瓦，GTI阿萨拉特遣队的指挥官。</p>" +
+    "<p>我跟他不在同一个小队，但这几年打过不少交道。他话少，不爱应酬，大部分时候独来独往。但我们处得来，可能因为我们都不是那种喜欢吹牛的人。一起喝酒可以各自沉默，谁也不觉得尴尬。</p>" +
+    "<p>我知道他有心事。他养父的死有些蹊跷，具体情况他没说过，我也没问。每个人都有不想碰的伤疤。</p>" +
+    "<p>前几天他被调去执行另一个任务，临走前我们碰了一杯。他说最近总觉得哪里不对劲，但又说不上来。我说可能是太累了，该休个假。他笑了笑，没接话。</p>" +
+    "<p>我的小队有四个人，跟我配合两年多了。老周是副手，四十出头，经验老道，关键时刻靠得住。其他几个各有所长，打仗我信任他们。私下里偶尔打牌喝酒，但不会聊太深的东西。</p>" +
+    "<p>我是个直性子，有啥说啥，但这一行有这一行的规矩。别和战友走太近，因为你不知道明天谁会回不来。</p>" +
+    "<p>不过我还是记得每个人的名字。</p>",
+  next: "ch1_4"
+},
+
+"ch1_4": {
+  title: "第一章：货物",
+  content: "<h2>四</h2>" +
+    "<p>2035年2月，新任务下达。</p>" +
+    "<hr>" +
+    "<p>你坐在简报室里，听取任务说明。</p>" +
+    "<p>一支哈夫克运输队将于明天下午通过K-7公路。两辆运输卡车，一辆装甲护卫车，武装人员约八人。运输内容是高价值技术设备——可能是曼德尔砖，那玩意儿是哈夫克的核心军事模块，各方势力都在抢。</p>" +
+    "<p>任务标注\"优先摧毁\"。</p>" +
+    "<p>威胁等级：中等。</p>" +
+    "<p>行动方案：在K-7公路弯道设伏，快速打击后撤离。</p>" +
+    "<p>你看了一眼地图。那个弯道你熟悉，两侧碎石坡，视野开阔，适合伏击。</p>" +
+    "<p class=\"dialogue\">\"问题？\"</p>" +
+    "<p class=\"dialogue\">\"没得。\"</p>" +
+    "<p>签字，领装备，出发。</p>" +
+    "<p>第二天下午，你的小队提前抵达预定位置。埋伏，等待。</p>" +
+    "<p>14:12，车队出现，与情报一致。</p>" +
+    "<p>14:15，交火开始。</p>" +
+    "<p>五分钟结束。八人全灭，三车损毁，我方无伤亡。</p>" +
+    "<p>顺利。也许太顺利了。</p>" +
+    "<p>你打开第一辆卡车车厢。几个木箱，普通机械零配件，轴承螺栓。</p>" +
+    "<p>你打开第二辆卡车车厢。</p>" +
+    "<p>几乎是空的。</p>" +
+    "<p>但地板上有清晰的刮痕和压痕——大型设备固定后移动留下的痕迹。很新。</p>" +
+    "<p>货物存在过，但被提前移走了。</p>" +
+    "<p>老周凑过来看了一眼：\"这就是高价值技术设备？\"</p>" +
+    "<p>你没回答。\"拍照，撤离。\"</p>",
+  next: "ch1_5"
+},
+
+"ch1_5": {
+  title: "第一章：货物",
+  content: "<h2>五</h2>" +
+    "<p>返回基地，你坐在桌前写行动报告。</p>" +
+    "<p>任务目标：完成。</p>" +
+    "<p>光标停在\"运输物资\"那一栏。</p>" +
+    "<p>情报说是高价值设备，可能是曼德尔砖。实际是空车厢和几箱螺栓。货物被近期移走，刮痕清晰，时间不会超过几个小时。</p>" +
+    "<p>谁移走的？什么时候？为什么？</p>" +
+    "<p>如果是哈夫克临时改变计划，那是情报延迟，正常。</p>" +
+    "<p>如果是有人提前知道我们要来……</p>" +
+    "<p>你盯着屏幕，手指悬在键盘上方。</p>",
+  choices: [
+    { label: "A", text: "任务完成，不提异常", desc: "情报偶尔有偏差，正常。任务完成了，没必要多写。", target: "ch1_endA" },
+    { label: "B", text: "详细记录异常，建议复核情报来源", desc: "与情报严重不符，应该如实上报。", target: "ch1_endB" },
+    { label: "C", text: "轻描淡写带过", desc: "\"物资少于预期，目标可能临时调整计划。\"提一句就够了。但这件事你会记住。", target: "ch1_endC" }
+  ]
+},
+
+"ch1_endA": {
+  title: "第一章：货物",
+  content: "<p>你删掉关于车厢的描述，只写了\"运输车辆已摧毁\"。</p>" +
+    "<p>六个月后，你带队执行一次清剿任务，情报显示目标区域有少量敌军残余。</p>" +
+    "<p>你到达时，发现情报错了。</p>" +
+    "<p>伏击圈在你们进入的瞬间闭合。</p>" +
+    "<p>GTI追认你为英雄，情报失误被归为\"战场迷雾导致的不可抗因素\"。</p>",
+  ending: { title: "故事结束", text: "你选择了沉默，沉默最终吞噬了你。" }
+},
+
+"ch1_endB": {
+  title: "第一章：货物",
+  content: "<p>你把车厢情况详细写进报告，附照片，建议情报部门复核来源。</p>" +
+    "<p>一个月后，你被调离一线，理由是\"组织需要你的经验培训新人\"。</p>" +
+    "<p>那份复核申请再也没人提起。三年后，你仍在后方，那个空车厢的记忆已经模糊。</p>",
+  ending: { title: "故事结束", text: "真相是危险的。有些问题，不该由你来问。" }
+},
+
+"ch1_endC": {
+  title: "第一章：货物",
+  content: "<p>你写道：\"运输物资少于预期，目标可能临时调整了计划。\"</p>" +
+    "<p>没有多写，没有附照片。</p>" +
+    "<p>但那个空车厢留在了你脑子里。新鲜的刮痕，清晰的压痕。货物被提前移走了。</p>" +
+    "<p>为什么？</p>" +
+    "<p>报告提交，一切正常。</p>" +
+    "<p>但从那以后，你开始留意一些以前会忽略的细节。大多数时候一切正常，但偶尔会有小小的不对劲——不足以写进报告，但足以被记住。</p>" +
+    "<p>你没有和任何人说。</p>" +
+    "<p>也许只是多心了。</p>" +
+    "<p>也许不是。</p>",
+  transition: { text: "进入第二章", target: "ch2_start" }
+},
+
+"ch2_start": {
+  title: "第二章：代价",
+  content: "<h2>一</h2>" +
+    "<p>八个月。</p>" +
+    "<p>从那个空车厢到现在，八个月了。</p>" +
+    "<p>2035年的阿萨拉，局势在变。</p>" +
+    "<p>哈夫克集团加快了在巴克什的建设，那座一千五百米高的尖塔——他们叫它\"巴别塔\"——已经封顶，成了整个北非最高的建筑。官方说那是\"全球资源协调中心\"，但谁都知道那是哈夫克的权力象征。塔顶的灯光在夜里能照亮半个城市，像一只永远睁着的眼睛。</p>" +
+    "<p>阿萨拉卫队内部的分裂越来越明显。尤索夫宣布\"继位\"之后，各个头目开始各自为政。赛伊德守着零号大坝，雷斯占据长弓溪谷，哈姆克在扎尔瓦特古城搞他的保皇复辟。他们名义上都是\"卫队\"，实际上彼此之间的火并不比跟哈夫克的冲突少。</p>" +
+    "<p>GTI的任务越来越多。</p>" +
+    "<p>我们这些一线干员能感觉到节奏在变快。以前一个月两三次任务，现在一个月四五次是常态。打击哈夫克的运输线、清剿卫队的据点、护送物资、营救人质——各种类型的行动轮番上阵。指挥部说这是\"战略推进期\"，要趁三方势力混乱的时候扩大优势。</p>" +
+    "<p>我不懂战略，我只知道弟兄们越来越累。</p>" +
+    "<p>老周的白头发多了。他以前还会在任务间隙打牌吹牛，现在更多时候是躺在床上发呆。小张的枪法倒是越来越准了，但他笑的次数少了。我们小队还算完整，隔壁几个小队就没那么幸运——有人受伤退役，有人永远留在了阿萨拉的黄沙里。</p>" +
+    "<p>基地的气氛也在变。以前晚上还能听到有人弹吉他、打篮球，现在安静了很多。大家完成任务就回宿舍，各自待着，不太愿意凑在一起。也许是累了，也许是不想跟可能明天就见不到的人走太近。</p>" +
+    "<p>我理解。</p>" +
+    "<p>红狼被派去执行了几次单独任务，回来后话更少了。我们偶尔一起喝酒，他会盯着杯子发呆，我问他在想什么，他说\"没什么\"。我没追问。每个人都有自己的心事。</p>" +
+    "<p>我自己的心事是那个空车厢。</p>" +
+    "<p>这八个月，我一直在留意。情报的时间窗口、目标的反应速度、行动后物资的去向——那些以前不会在意的细节，现在我都会多看一眼。</p>" +
+    "<p>大部分时候，一切正常。</p>" +
+    "<p>但\"大部分\"不是\"全部\"。</p>" +
+    "<p>有两三次，我注意到一些小小的违和感。情报精准得过分，敌人配合得像演练，某些行动的时机恰好卡在一个微妙的节点上。每一件单独拿出来都可以解释，但放在一起看，就像一幅画里有几笔颜色不对——说不上哪里错了，就是觉得别扭。</p>" +
+    "<p>我没跟任何人说。也许只是我多心了。</p>" +
+    "<p>十月的一天，新任务下达。</p>",
+  next: "ch2_2"
+},
+
+"ch2_2": {
+  title: "第二章：代价",
+  content: "<h2>二</h2>" +
+    "<p>你坐在简报室里，银翼站在屏幕前。</p>" +
+    "<p class=\"dialogue\">\"凌晨两点，我方一支侦察小队在执行情报收集任务时遭遇伏击。\"他点了一下地图，标记出位置，\"卡迪姆镇东北角，编号D-7。六人被困，两人负伤，弹药有限。\"</p>" +
+    "<p>你看着地图。D-7是城镇边缘的一片低矮建筑群，地形复杂，不利于大规模行动。</p>" +
+    "<p class=\"dialogue\">\"敌方是阿萨拉卫队武装人员，估计十五到二十人，占据周边有利地形。\"银翼继续说，\"你们的任务是前往支援，解救友军，消灭敌人。威胁等级：中等。\"</p>" +
+    "<p>他顿了顿，补充道：\"该区域平民大部分已撤离，少量滞留人员不影响行动。\"</p>" +
+    "<p>大部分已撤离。</p>" +
+    "<p>你想起空车厢那次任务，情报说的是\"高价值技术设备\"。实际上是空的。</p>" +
+    "<p>这次情报说\"大部分已撤离\"。实际上呢？</p>" +
+    "<p>银翼问：\"有问题吗？\"</p>",
+  choices: [
+    { label: "A", text: "没有问题", desc: "情报部门的事不归你管，你只负责执行。问太多问题不会改变任务内容。", target: "ch2_2a" },
+    { label: "B", text: "追问平民撤离的情报来源", desc: "\"平民撤离的情报是怎么确认的？来源是什么？\"", target: "ch2_2b" }
+  ]
+},
+
+"ch2_2a": {
+  title: "第二章：代价",
+  content: "<p>你点点头。\"没有。\"</p>" +
+    "<p>银翼的目光在你身上停了半秒，然后移开。\"十五分钟后出发。\"</p>" +
+    "<p>签字，领装备，出发。</p>",
+  next: "ch2_3"
+},
+
+"ch2_2b": {
+  title: "第二章：代价",
+  content: "<p class=\"dialogue\">\"平民撤离的情报是怎么确认的？\"你问，\"来源是什么？\"</p>" +
+    "<p>银翼看着你，表情没什么变化，但目光似乎锐利了一点。</p>" +
+    "<p class=\"dialogue\">\"通过当地合作渠道确认。\"他说，\"情报来源可靠。还有其他问题吗？\"</p>" +
+    "<p class=\"dialogue\">\"合作渠道是指——\"</p>" +
+    "<p class=\"dialogue\">\"威龙少校。\"银翼打断你，语气平淡但有了一丝不耐烦，\"情报工作的具体流程不在简报范围内。你的职责是执行任务。还有问题吗？\"</p>" +
+    "<p>你沉默了一秒。\"没有了。\"</p>" +
+    "<p class=\"dialogue\">\"十五分钟后出发。\"</p>" +
+    "<p>你签字，领装备。老周走过来，压低声音：\"头儿，你刚才问那个干啥？\"</p>" +
+    "<p class=\"dialogue\">\"没啥。\"你说，\"走吧。\"</p>",
+  next: "ch2_3",
+  effect: "suspicion1"
+},
+
+"ch2_3": {
+  title: "第二章：代价",
+  content: "<h2>三</h2>" +
+    "<p>你的小队在中午抵达D-7区域外围。</p>" +
+    "<p>五个人，装备齐全。</p>" +
+    "<p>你趴在一栋废弃建筑的二楼窗口，用望远镜观察战场。</p>" +
+    "<p>友军位置确认——一栋三层建筑，外墙弹痕累累，窗口有沙袋堆砌。枪声断断续续，说明他们还在抵抗，但火力明显不如敌人密集。</p>" +
+    "<p>敌人阵地在友军西侧和南侧的平房群中，武装人员在屋顶和窗口移动，形成交叉火力封锁。</p>" +
+    "<p>标准的包围态势。友军撑不了太久。</p>" +
+    "<p>你调整望远镜，扫视敌人阵地周边。</p>" +
+    "<p>然后你看到了。</p>" +
+    "<p>敌人阵地后方约五十米，一栋两层民居。窗户紧闭，但能看到里面有人影晃动。动作幅度小，姿态不像武装人员。</p>" +
+    "<p>你调高倍数。</p>" +
+    "<p>是平民。女人，老人，还有孩子。至少两个孩子，挤在二楼房间里。</p>" +
+    "<p>\"大部分已撤离。\"</p>" +
+    "<p>老周爬到你旁边，也举起望远镜。片刻后，他低声说：\"头儿，后面那栋楼里有人。不像是武装分子。\"</p>" +
+    "<p class=\"dialogue\">\"我看到了。\"</p>" +
+    "<p class=\"dialogue\">\"情报说撤离了。\"</p>" +
+    "<p>你没回答。</p>" +
+    "<p>通讯器响了：\"威龙，威龙，这里是猎犬小队。我们撑不住了，又倒了一个。敌人阵地在你们十一点方向，请求火力支援，重复，请求火力支援！\"</p>" +
+    "<p>你看向十一点方向。</p>" +
+    "<p>敌人阵地。五十米外的民居。</p>" +
+    "<p>它们挨得很近。</p>" +
+    "<p class=\"dialogue\">\"威龙，收到没有？\"友军小队长的声音带着急迫和喘息，\"快点！\"</p>" +
+    "<p>老周看着你。其他队员也在等。</p>" +
+    "<p>你看着那栋民居的窗户。窗帘动了一下，有个小小的身影一闪而过。</p>" +
+    "<p>是个孩子。</p>" +
+    "<p>通讯器里又响起呼叫：\"威龙！再不来我们就完了！\"</p>" +
+    "<p>你必须做决定。</p>",
+  choices: [
+    { label: "A", text: "提供火力支援", desc: "\"收到，火力支援马上到。\"友军的命不能丢。战场上没有完美选择。", target: "ch2_3a" },
+    { label: "B", text: "拒绝火力支援，小队渗透接近", desc: "\"火力支援无法提供，目标区域有平民。我们从侧翼渗透，你们再坚持十分钟。\"", target: "ch2_3b" },
+    { label: "C", text: "有限支援，同时分兵疏散平民", desc: "\"收到，有限火力支援。同时我派人去疏散平民。\"两边都要顾。", target: "ch2_3c" }
+  ]
+},
+
+"ch2_3a": {
+  title: "第二章：代价",
+  content: "<p class=\"dialogue\">\"收到，火力支援马上到。\"</p>" +
+    "<p>你的声音很稳。\"老周，榴弹发射器，目标十一点方向。\"</p>" +
+    "<p>老周看了你一眼，没说话，开始准备。</p>" +
+    "<p>你举起望远镜，最后看了一眼那栋民居的窗户。</p>" +
+    "<p>三发榴弹落在敌人阵地。爆炸声连响，火光腾起，敌人火力瞬间减弱。</p>" +
+    "<p class=\"dialogue\">\"猎犬小队，现在突围！\"</p>" +
+    "<p>五分钟后，友军成功撤出。六人全部生还，三人负伤。</p>" +
+    "<p>任务完成。</p>" +
+    "<p>你带队向撤离点移动，路过炮击区域。</p>" +
+    "<p>那栋民居的外墙塌了一半，二楼已经不存在了。</p>" +
+    "<p>废墟旁边，有人在哭。</p>" +
+    "<p>一个女人跪在地上，怀里抱着一个孩子。孩子很小，身上有血，不动了。</p>" +
+    "<p>旁边还有两具尸体。</p>" +
+    "<p>你站在那里。女人抬头看你，眼神空洞。</p>" +
+    "<p>老周走过来：\"头儿，该走了。\"</p>" +
+    "<p>你转身离开。</p>" +
+    "<p>走出很远，你回头看了一眼。女人还跪在那里。</p>" +
+    "<p>三个人。因为你的命令。</p>",
+  next: "ch2_4",
+  effect: "awareness1"
+},
+
+"ch2_3b": {
+  title: "第二章：代价",
+  content: "<p class=\"dialogue\">\"火力支援无法提供，目标区域有平民。我们从侧翼渗透，你们再坚持十分钟。\"</p>" +
+    "<p>通讯器里沉默了两秒。</p>" +
+    "<p class=\"dialogue\">\"十分钟？威龙，我们已经——\"</p>" +
+    "<p class=\"dialogue\">\"尽量坚持。\"你切断通讯，\"跟我走，东侧绕过去。\"</p>" +
+    "<p>渗透需要时间。你们在废墟间穿行，通讯器里断断续续传来枪声。</p>" +
+    "<p>八分钟后，你们抵达敌人侧翼，发起突袭。</p>" +
+    "<p>战斗持续了六分钟。敌人被两面夹击，最终被消灭。</p>" +
+    "<p>你带队去接应友军。</p>" +
+    "<p>六人，活了四人。</p>" +
+    "<p>两具尸体躺在一楼。一个是小队长，胸口三枪。另一个很年轻，脑袋被打穿了。</p>" +
+    "<p>他们没能坚持到你到。</p>" +
+    "<p>剩下四人中，两人重伤。能站着的那个看着你，眼神复杂，什么都没说。</p>" +
+    "<p>你带队撤离。路过那栋民居时，窗户里有人探出头。</p>" +
+    "<p>他们活着。</p>" +
+    "<p>但你的两个战友死了。</p>",
+  next: "ch2_4",
+  effect: "awareness2"
+},
+
+"ch2_3c": {
+  title: "第二章：代价",
+  content: "<p class=\"dialogue\">\"收到，有限火力支援。老周，烟雾弹打在敌人和民居之间。小张、老刘，跟我疏散平民。老周留下精确压制。\"</p>" +
+    "<p>分兵行动。烟雾升起，你们向民居移动。</p>" +
+    "<p>踹开后门，二楼挤着十几个平民。你让他们跟你走。</p>" +
+    "<p>撤离途中，敌人发现了你们。</p>" +
+    "<p>枪声中，一个男人腿部中弹倒下。你扛起他继续跑。</p>" +
+    "<p>与此同时，通讯器传来消息：友军小队有一人阵亡。</p>" +
+    "<p>最终：一名友军死亡，一名平民死亡——那个腿部中弹的男人失血过多，死在送医路上。</p>" +
+    "<p>你试图两边都救，两边都失去了人。</p>",
+  next: "ch2_4",
+  effect: "awareness1"
+},
+
+"ch2_4": {
+  title: "第二章：代价",
+  content: "<h2>四</h2>" +
+    "<p>返回基地。</p>" +
+    "<p>你坐在宿舍里，开始回想这次任务。</p>" +
+    "<p>情报说\"平民大部分已撤离\"。实际上十几个人挤在那栋楼里。</p>" +
+    "<p>为什么？</p>" +
+    "<p>你开始私下打听。不走官方渠道，只是闲聊时不经意提起，在能接触的记录里翻找。</p>" +
+    "<p>几天后，你拼出了一些东西：</p>" +
+    "<p><span class=\"bold-label\">友军的任务目标</span>：情报显示D-7区域有卫队临时通讯节点，需确认位置。但战场清理报告里，没有找到任何通讯设备。目标可能根本不存在。</p>" +
+    "<p><span class=\"bold-label\">敌人出现的原因</span>：官方说法是\"巧遇流动巡逻\"。但十五到二十人的规模，不像临时巡逻，更像是提前部署。</p>" +
+    "<p><span class=\"bold-label\">平民为什么没撤离</span>：通知是通过\"当地合作渠道\"发布的。那个渠道是什么，没人说得清。也许通知发了，没人收到。也许根本没发。</p>" +
+    "<p>你看着自己整理的记录。</p>" +
+    "<p>友军追一个可能不存在的目标，在一个平民没有撤离的区域，遭遇了\"恰好\"出现的敌人。</p>" +
+    "<p>巧合？疏忽？还是有人根本不在乎？</p>" +
+    "<p>空车厢是第一次。这是第二次。</p>" +
+    "<p>你要怎么做？</p>",
+  choices: [
+    { label: "A", text: "不再追问", desc: "算了。任务完成了，人死了，追问改变不了什么。也许就是倒霉。", target: "ch2_4a" },
+    { label: "B", text: "继续私下调查", desc: "你要知道真相。但你不会走官方渠道，不会让人知道你在问问题。", target: "ch2_4b" },
+    { label: "C", text: "正式向上级提出质疑", desc: "这次任务情报有严重问题，你要求复核。你是GTI干员，你有权知道真相。", target: "ch2_4c" }
+  ]
+},
+
+"ch2_4a": {
+  title: "第二章：代价",
+  content: "<p>你把记录撕碎，扔进垃圾桶。</p>" +
+    "<p>算了。</p>" +
+    "<p>但那些画面——废墟、尸体、女人空洞的眼神——在脑子里挥之不去。</p>" +
+    "<p>你躺在床上，盯着天花板，很久睡不着。</p>",
+  next: "ch2_5",
+  effect: "loyal"
+},
+
+"ch2_4b": {
+  title: "第二章：代价",
+  content: "<p>你把记录藏好。</p>" +
+    "<p>继续查。慢慢查。不动声色地查。</p>",
+  next: "ch2_5",
+  effect: "awaken"
+},
+
+"ch2_4c": {
+  title: "第二章：代价",
+  content: "<p>你找到银翼。</p>" +
+    "<p class=\"dialogue\">\"这次任务情报有问题。平民没有撤离，友军目标可能不存在。我要求复核情报来源。\"</p>" +
+    "<p>银翼看着你，表情平静。</p>" +
+    "<p class=\"dialogue\">\"情报工作有其复杂性，战场情况瞬息万变。\"</p>" +
+    "<p class=\"dialogue\">\"这不是复杂性的问题。有人因此死了。\"</p>" +
+    "<p class=\"dialogue\">\"战争中会有牺牲。\"</p>" +
+    "<p class=\"dialogue\">\"我要求复核。\"</p>" +
+    "<p>银翼沉默片刻。\"我会反映你的意见。但我建议你专注于自己的职责，威龙少校。有些问题，不是一线干员该操心的。\"</p>" +
+    "<p>他转身离开。</p>" +
+    "<p>你站在原地，攥紧拳头。</p>",
+  next: "ch2_5",
+  effect: "danger"
+},
+
+"ch2_5": {
+  title: "第二章：代价",
+  content: "<h2>五</h2>" +
+    "<p>几天后，你在走廊遇到红狼。</p>" +
+    "<p>他刚从任务回来，看起来很疲惫。</p>" +
+    "<p class=\"dialogue\">\"听说你们那次出了状况。\"他说。</p>" +
+    "<p class=\"dialogue\">\"消息传得挺快。\"</p>" +
+    "<p class=\"dialogue\">\"基地就这么大。\"红狼靠在墙上，\"你还好吗？\"</p>" +
+    "<p>你看着他，考虑要不要说。</p>",
+  choices: [
+    { label: "A", text: "不多说", desc: "\"还好。就是累了。\"", target: "ch2_5a" },
+    { label: "B", text: "说任务中的两难，不提之后的调查", desc: "\"我做了一个选择，有人死了。不管怎么选都会死人。我不知道对不对。\"", target: "ch2_5b" },
+    { label: "C", text: "把所有疑虑都说出来", desc: "压低声音：\"红狼，我发现了一些事。不只是这次任务。\"", target: "ch2_5c" }
+  ]
+},
+
+"ch2_5a": {
+  title: "第二章：代价",
+  content: "<p class=\"dialogue\">\"还好。就是累了。\"</p>" +
+    "<p>红狼看了你一会儿，点点头。</p>" +
+    "<p class=\"dialogue\">\"好好休息。有事找我。\"</p>" +
+    "<p>他走了。你看着他的背影，没有叫住他。</p>",
+  chapterEnd: { text: "第二章 完", route: "根据你的选择，故事将沿着不同的方向发展……" }
+},
+
+"ch2_5b": {
+  title: "第二章：代价",
+  content: "<p class=\"dialogue\">\"我做了一个选择，有人死了。不管怎么选都会死人。我不知道对不对。\"</p>" +
+    "<p>红狼听完，沉默了一会儿。</p>" +
+    "<p class=\"dialogue\">\"战场上没有完美选择。你做了你能做的。\"</p>" +
+    "<p class=\"dialogue\">\"够吗？\"</p>" +
+    "<p>他没有回答。过了一会儿，他说：\"如果你发现有些事不对劲……不是只有你一个人在想这些。\"</p>" +
+    "<p>你抬头看他。</p>" +
+    "<p class=\"dialogue\">\"什么意思？\"</p>" +
+    "<p class=\"dialogue\">\"没什么。\"他直起身，\"小心点。\"</p>" +
+    "<p>他走了。</p>" +
+    "<p>不是只有你一个人。</p>" +
+    "<p>这句话在你脑子里转了很久。</p>",
+  chapterEnd: { text: "第二章 完", route: "觉醒线" },
+  effect: "redwolf1"
+},
+
+"ch2_5c": {
+  title: "第二章：代价",
+  content: "<p>红狼拉着你走进旁边的空房间，关上门。</p>" +
+    "<p class=\"dialogue\">\"说。\"</p>" +
+    "<p>你把所有事都说了。空车厢，八个月的违和感，这次任务的疑点。</p>" +
+    "<p>红狼听完，沉默很久。</p>" +
+    "<p class=\"dialogue\">\"你知道这些话让别人听到会怎样？\"</p>" +
+    "<p class=\"dialogue\">\"我知道。但我信任你。\"</p>" +
+    "<p>他看着你，然后说：\"我也在查一些事。具体的不能说。但你说的那些，我也注意到了。\"</p>" +
+    "<p>你心里一震。</p>" +
+    "<p class=\"dialogue\">\"小心。\"他说，\"别让任何人知道你在想这些。有些人……不希望有人问这些问题。\"</p>" +
+    "<p class=\"dialogue\">\"谁？\"</p>" +
+    "<p class=\"dialogue\">\"改天再聊。找个安全的地方。\"</p>" +
+    "<p>他打开门，走了出去。</p>" +
+    "<p>你站在空荡荡的房间里。</p>" +
+    "<p>红狼也在查。不是只有你一个人。</p>" +
+    "<p>但\"有些人不希望有人问问题\"——那是谁？</p>",
+  chapterEnd: { text: "第二章 完", route: "觉醒线（红狼线）" },
+  effect: "redwolf3"
+}
+
+};
+
+function applyEffect(effectName) {
+  if (!effectName) return;
+  switch(effectName) {
+    case "suspicion1": gameState.suspicion += 1; break;
+    case "awareness1": gameState.awareness += 1; break;
+    case "awareness2": gameState.awareness += 2; break;
+    case "loyal": gameState.route = "loyal"; break;
+    case "awaken": gameState.route = "awaken"; gameState.awareness += 2; break;
+    case "danger": gameState.route = "danger"; gameState.suspicion += 3; break;
+    case "redwolf1": gameState.redwolfTrust += 1; break;
+    case "redwolf3": gameState.route = "redwolf"; gameState.redwolfTrust += 3; break;
+  }
+}
+
+function renderPassage(passageId) {
+  var passage = passages[passageId];
+  if (!passage) {
+    console.error("Passage not found:", passageId);
+    return;
+  }
+
+  if (passage.effect) {
+    applyEffect(passage.effect);
+  }
+
+  var container = document.getElementById("passage-container");
+  var html = "<div class=\"passage fade-in\">";
+
+  if (passage.title) {
+    html += "<h1>" + passage.title + "</h1>";
+  }
+
+  html += passage.content;
+
+  if (passage.choices) {
+    html += "<div class=\"choices\">";
+    html += "<div class=\"choices-title\">【 选 择 】</div>";
+    for (var i = 0; i < passage.choices.length; i++) {
+      var choice = passage.choices[i];
+      html += "<button class=\"choice-btn\" onclick=\"renderPassage('" + choice.target + "')\">";
+      html += "<span class=\"choice-label\">" + choice.label + ".</span> " + choice.text;
+      if (choice.desc) {
+        html += "<span class=\"choice-desc\">" + choice.desc + "</span>";
+      }
+      html += "</button>";
+    }
+    html += "</div>";
+  }
+
+  if (passage.next) {
+    html += "<div class=\"chapter-transition\">";
+    html += "<button class=\"continue-btn\" onclick=\"renderPassage('" + passage.next + "')\">继 续</button>";
+    html += "</div>";
+  }
+
+  if (passage.transition) {
+    html += "<div class=\"chapter-transition\">";
+    html += "<button class=\"continue-btn\" onclick=\"renderPassage('" + passage.transition.target + "')\">" + passage.transition.text + "</button>";
+    html += "</div>";
+  }
+
+  if (passage.ending) {
+    html += "<div class=\"ending\">";
+    html += "<div class=\"ending-title\">—— " + passage.ending.title + " ——</div>";
+    html += "<div class=\"ending-text\">" + passage.ending.text + "</div>";
+    html += "<button class=\"restart-btn\" onclick=\"restart()\">重新开始</button>";
+    html += "</div>";
+  }
+
+  if (passage.chapterEnd) {
+    html += "<div class=\"ending\">";
+    html += "<div class=\"ending-title\">—— " + passage.chapterEnd.text + " ——</div>";
+    if (passage.chapterEnd.route) {
+      html += "<div class=\"ending-text\">" + passage.chapterEnd.route + "</div>";
+    }
+    html += "<button class=\"restart-btn\" onclick=\"restart()\">重新开始</button>";
+    html += "</div>";
+  }
+
+  html += "</div>";
+
+  container.innerHTML = html;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function restart() {
+  gameState.chapter = 1;
+  gameState.route = "normal";
+  gameState.choices = [];
+  gameState.suspicion = 0;
+  gameState.awareness = 0;
+  gameState.redwolfTrust = 0;
+  renderPassage("start");
+}
+
+renderPassage("start");
+</script>
+
+</body>
+</html>
